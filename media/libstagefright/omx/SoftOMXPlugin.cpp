@@ -79,6 +79,11 @@ static const struct {
     { "OMX.google.raw.decoder", "rawdec", "audio_decoder.raw" },
     { "OMX.google.flac.encoder", "flacenc", "audio_encoder.flac" },
     { "OMX.google.gsm.decoder", "gsmdec", "audio_decoder.gsm" },
+    { "OMX.ST.aac.decoder", "ste_aacdec", "audio_decoder.aac" },
+    { "OMX.google.aac.decoder", "aacdec", "audio_decoder.aeld" },
+    { "OMX.ST.mp3.decoder", "ste_mp3dec", "audio_decoder.mp3" },
+    { "OMX.ST.aac.decoder", "ste_aacdec", "audio_decoder.aac" },
+    { "OMX.ST.AFM.decoder.wmapro_v10", "ste_wmapro_v10", "audio_decoder.wmapro" },
 };
 
 static const size_t kNumComponents =

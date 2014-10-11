@@ -38,6 +38,8 @@
 #define WAIT_STREAM_END_TIMEOUT_SEC     120
 
 
+#define OBTAIN_BUFFER_WAIT_TIME (70)
+
 namespace android {
 // ---------------------------------------------------------------------------
 

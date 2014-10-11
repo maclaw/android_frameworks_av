@@ -2481,6 +2481,7 @@ status_t MPEG4Writer::Track::threadEntry() {
 
         // use File write in seperate thread for video only recording
         if (!hasMultipleTracks && mIsAudio) {
+#ifndef STE_HARDWARE
 #if defined (OMAP_ENHANCEMENT) && defined (TARGET_OMAP3)
             off64_t offset = mOwner->addSample_l(copy);
 #else
@@ -2496,6 +2497,10 @@ status_t MPEG4Writer::Track::threadEntry() {
             }
             copy->release();
             copy = NULL;
+#else
+            mChunkSamples.push_back(copy);
+            bufferChunk(timestampUs);
+#endif
             continue;
         }
 

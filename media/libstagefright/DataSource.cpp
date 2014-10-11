@@ -29,6 +29,11 @@
 #include "include/MPEG2TSExtractor.h"
 #include "include/MPEG4Extractor.h"
 #include "include/NuCachedSource2.h"
+#ifdef STE_HARDWARE
+#include "include/NuCachedFileSource2.h"
+#include "include/AVIExtractor.h"
+#include "include/ASFExtractor.h"
+#endif
 #include "include/OggExtractor.h"
 #include "include/WAVExtractor.h"
 #include "include/WVMExtractor.h"
@@ -222,6 +227,8 @@ void Sniffer::registerDefaultSniffers() {
     registerSniffer_l(SniffAAC);
     registerSniffer_l(SniffMPEG2PS);
     registerSniffer_l(SniffWVM);
+    registerSniffer_l(SniffAVI);
+    registerSniffer_l(SniffASF);
 #ifdef ENABLE_AV_ENHANCEMENTS
     registerSniffer_l(ExtendedExtractor::Sniff);
 #endif
@@ -261,7 +268,7 @@ sp<DataSource> DataSource::CreateFromURI(
 
     sp<DataSource> source;
     if (!strncasecmp("file://", uri, 7)) {
-        source = new FileSource(uri + 7);
+        source = new NuCachedFileSource2(new FileSource(uri + 7));
     } else if (!strncasecmp("http://", uri, 7)
             || !strncasecmp("https://", uri, 8)
             || isWidevine) {
@@ -303,18 +310,29 @@ sp<DataSource> DataSource::CreateFromURI(
 #endif
     } else {
         // Assume it's a filename.
-        source = new FileSource(uri);
+        source = new NuCachedFileSource2(new FileSource(uri));
     }
 
     if (source == NULL || source->initCheck() != OK) {
         return NULL;
     }
 
+    // Save uri
+    source->setCharUri(uri);
+
     return source;
 }
 
 String8 DataSource::getMIMEType() const {
     return String8("application/octet-stream");
+}
+
+void DataSource::setCharUri(const char* uri) {
+    mUri = String8(uri);
+}
+
+const char* DataSource::getCharUri() {
+    return mUri.string();
 }
 
 }  // namespace android

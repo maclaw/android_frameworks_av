@@ -350,7 +350,7 @@ status_t SampleTable::setTimeToSampleParams(
 }
 
 status_t SampleTable::setCompositionTimeToSampleParams(
-        off64_t data_offset, size_t data_size) {
+        off64_t data_offset, size_t data_size, uint32_t *consumed_offset) {
     ALOGI("There are reordered frames present.");
 
     if (mCompositionTimeDeltaEntries != NULL || data_size < 8) {
@@ -372,7 +372,7 @@ status_t SampleTable::setCompositionTimeToSampleParams(
 
     size_t numEntries = U32_AT(&header[4]);
 
-    if (data_size != (numEntries + 1) * 8) {
+    if (data_size < (numEntries + 1) * 8) {
         return ERROR_MALFORMED;
     }
 
@@ -400,6 +400,7 @@ status_t SampleTable::setCompositionTimeToSampleParams(
     mCompositionDeltaLookup->setEntries(
             mCompositionTimeDeltaEntries, mNumCompositionTimeDeltaEntries);
 
+    *consumed_offset = (numEntries + 1) * 8;
     return OK;
 }
 

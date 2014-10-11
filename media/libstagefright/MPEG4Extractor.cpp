@@ -1524,15 +1524,25 @@ status_t MPEG4Extractor::parseChunk(off64_t *offset, int depth) {
 
         case FOURCC('c', 't', 't', 's'):
         {
+            uint32_t consumed_offset;
             status_t err =
                 mLastTrack->sampleTable->setCompositionTimeToSampleParams(
-                        data_offset, chunk_data_size);
+                        data_offset, chunk_data_size, &consumed_offset);
 
             if (err != OK) {
                 return err;
             }
 
-            *offset += chunk_size;
+            off64_t chunk_end = *offset + chunk_size;
+            *offset = data_offset + consumed_offset;
+
+            if (*offset < chunk_end) {
+                // Parse 'free' or 'skip' box
+                status_t err = parseChunk(offset, depth + 1);
+                if (err != OK) {
+                    return err;
+                }
+            }
             break;
         }
 
@@ -1884,6 +1894,12 @@ status_t MPEG4Extractor::parseChunk(off64_t *offset, int depth) {
             return UNKNOWN_ERROR; // stop parsing after sidx
         }
 
+        case FOURCC('f', 'r', 'e', 'e'):
+        case FOURCC('s', 'k', 'i', 'p'):
+        {
+            *offset += chunk_size;
+            break;
+        }
         default:
         {
             *offset += chunk_size;
@@ -2330,7 +2346,8 @@ status_t MPEG4Extractor::verifyTrack(Track *track) {
             return ERROR_MALFORMED;
         }
     } else if (!strcasecmp(mime, MEDIA_MIMETYPE_VIDEO_MPEG4)
-            || !strcasecmp(mime, MEDIA_MIMETYPE_AUDIO_AAC)) {
+            || !strcasecmp(mime, MEDIA_MIMETYPE_AUDIO_AAC)
+            || !strcasecmp(mime, MEDIA_MIMETYPE_AUDIO_AAC_ELD)) {
         if (!track->meta->findData(kKeyESDS, &type, &data, &size)
                 || type != kTypeESDS) {
             return ERROR_MALFORMED;
@@ -2375,6 +2392,17 @@ status_t MPEG4Extractor::updateAudioTrackInfoFromESDS_MPEG4Audio(
          return OK;
     }
 #else
+#ifdef STE_HARDWARE
+    if (objectTypeIndication  == 0x6b || objectTypeIndication == 0x69) {
+         // The media subtype is MP3 audio
+         // Our software MP3 audio decoder may not be able to handle
+
+        // packetized MP3 audio;
+        ALOGE("MP3 track in MP4/3GPP file is not supported, "
+            "continuing playback");
+        return OK;
+     }
+#else
     if (objectTypeIndication  == 0x6b) {
         // The media subtype is MP3 audio
         // Our software MP3 audio decoder may not be able to handle
@@ -2382,6 +2410,7 @@ status_t MPEG4Extractor::updateAudioTrackInfoFromESDS_MPEG4Audio(
         ALOGE("MP3 track in MP4/3GPP file is not supported");
         return ERROR_UNSUPPORTED;
     }
+#endif
 #endif
 
     const uint8_t *csd;
@@ -2418,6 +2447,7 @@ status_t MPEG4Extractor::updateAudioTrackInfoFromESDS_MPEG4Audio(
 
     if (objectType == 31) {  // AAC-ELD => additional 6 bits
         objectType = 32 + br.getBits(6);
+        mLastTrack->meta->setCString(kKeyMIMEType, MEDIA_MIMETYPE_AUDIO_AAC_ELD);
     }
 
 #ifdef QCOM_DIRECTTRACK
@@ -3881,7 +3911,7 @@ static bool BetterSniffMPEG4(
             case FOURCC('m', 'o', 'o', 'v'):
             {
                 moovAtomEndOffset = offset + chunkSize;
-
+                foundGoodFileType = true;
                 done = true;
                 break;
             }

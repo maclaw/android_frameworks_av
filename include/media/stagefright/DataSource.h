@@ -127,6 +127,9 @@ public:
         return String8();
     }
 
+    void setCharUri(const char* uri);
+    const char* getCharUri();
+
     virtual String8 getMIMEType() const;
 
 protected:
@@ -138,6 +141,8 @@ protected:
 
     DataSource(const DataSource &);
     DataSource &operator=(const DataSource &);
+
+    String8 mUri;
 };
 
 }  // namespace android

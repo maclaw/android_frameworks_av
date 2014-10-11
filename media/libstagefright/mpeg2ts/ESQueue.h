@@ -61,6 +61,14 @@ private:
     Mode mMode;
     uint32_t mFlags;
 
+    // Declaring member variables for storing the values for Constant Bit Rate
+    size_t mFrameSizeCBR;
+
+    int mSamplingRateCBR;
+    int mNumChannelsCBR;
+    int mBitRateCBR;
+    int mNumSamplesCBR;
+
     sp<ABuffer> mBuffer;
     List<RangeInfo> mRangeInfos;
 

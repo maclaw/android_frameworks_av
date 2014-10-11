@@ -179,7 +179,13 @@ enum {
     kKeyCryptoKey         = 'cryK',  // uint8_t[16]
     kKeyCryptoIV          = 'cryI',  // uint8_t[16]
     kKeyCryptoMode        = 'cryM',  // int32_t
+#ifdef STE_HARDWARE
+    // To store the extracted metadata in VC1 streams
+    kKeyVC1Info = 'info',  //raw data
 
+    // To store the extracted metadata in WMA streams
+    kKeyWMAInfo = 'wmai', //raw data
+#endif
     kKeyCryptoDefaultIVSize = 'cryS',  // int32_t
 
     kKeyPssh              = 'pssh',  // raw data
@@ -194,6 +200,10 @@ enum {
     kTypeESDS        = 'esds',
     kTypeAVCC        = 'avcc',
     kTypeD263        = 'd263',
+#ifdef STE_HARDWARE
+    kTypeVC1         = 'wmv3',
+    kTypeWMA         = 'wmau',
+#endif
 };
 
 enum {
@@ -204,7 +214,9 @@ enum {
 };
 
 enum {
+#ifndef STE_HARDWARE
     kTypeWMA,
+#endif
     kTypeWMAPro,
     kTypeWMALossLess,
 };

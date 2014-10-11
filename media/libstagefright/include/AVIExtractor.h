@@ -43,6 +43,8 @@ struct AVIExtractor : public MediaExtractor {
 
 protected:
     virtual ~AVIExtractor();
+    bool mIsVC1SimpleProfile;
+    bool mIsVC1AdvancedProfile;
 
 private:
     struct AVISource;
@@ -76,6 +78,9 @@ private:
         ssize_t mThumbnailSampleIndex;
         size_t mMaxSampleSize;
 
+        uint8_t extraData[4]; // To store the STRUCT_C from AVI container
+        uint8_t *apExtraData; // To store the Sequence header content
+        uint32_t apExtraDataSize; // Size of the extra data stored
         // If mBytesPerSample > 0:
         double mAvgChunkSize;
         size_t mFirstChunkSize;
@@ -111,6 +116,7 @@ private:
 
     status_t addMPEG4CodecSpecificData(size_t trackIndex);
     status_t addH264CodecSpecificData(size_t trackIndex);
+    status_t addVC1CodecSpecificData(size_t trackIndex);
 
     static bool IsCorrectChunkType(
         ssize_t trackIndex, Track::Kind kind, uint32_t chunkType);

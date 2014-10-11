@@ -89,6 +89,8 @@ struct OMXCodec : public MediaSource,
     // from MediaBufferObserver
     virtual void signalBufferReturned(MediaBuffer *buffer);
 
+    static uint32_t OmxToHALFormat(OMX_COLOR_FORMATTYPE omxValue);
+
     enum Quirks {
         kNeedsFlushBeforeDisable              = 1,
         kWantsNALFragments                    = 2,
@@ -103,6 +105,10 @@ struct OMXCodec : public MediaSource,
         kSupportsMultipleFramesPerInputBuffer = 1024,
         kRequiresLargerEncoderOutputBuffer    = 2048,
         kOutputBuffersAreUnreadable           = 4096,
+#ifdef STE_HARDWARE
+        kRequiresStoreMetaDataBeforeIdle      = 16384,
+        kOverrideDefaultAVCProfile            = 32768,
+#endif
 #if defined(OMAP_ENHANCEMENT)
         kAvoidMemcopyInputRecordingFrames     = 0x20000000,
 #endif
@@ -392,6 +398,8 @@ private:
     status_t parseAVCCodecSpecificData(
             const void *data, size_t size,
             unsigned *profile, unsigned *level);
+    status_t parseVC1CodecSpecificData(
+            const void *data, size_t size);
 
     status_t stopOmxComponent_l();
     status_t flushBuffersOnError();

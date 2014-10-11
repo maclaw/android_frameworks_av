@@ -30,6 +30,7 @@
 #include "include/DRMExtractor.h"
 #include "include/SoftwareRenderer.h"
 #include "include/NuCachedSource2.h"
+#include "include/NuCachedFileSource2.h"
 #include "include/ThrottledSource.h"
 #include "include/MPEG2TSExtractor.h"
 #include "include/WVMExtractor.h"
@@ -435,7 +436,7 @@ status_t AwesomePlayer::setDataSource(
     }
 #endif
 
-    sp<DataSource> dataSource = new FileSource(fd, offset, length);
+    sp<DataSource> dataSource = new NuCachedFileSource2(new FileSource(fd, offset, length));
 
     status_t err = dataSource->initCheck();
 
